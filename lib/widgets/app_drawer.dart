@@ -64,15 +64,8 @@ class AppDrawer extends StatelessWidget {
                 ),
                 children: [
                   TextSpan(
-                    text: 'flavorful',
+                    text: 'flavorful.',
                     style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  TextSpan(
-                    text: '.',
-                    style: TextStyle(
-                      color: AppColors.accent,
-                      fontWeight: FontWeight.w700,
-                    ),
                   ),
                 ],
               ),

@@ -101,7 +101,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               TextSpan(
                 text: '.',
                 style: TextStyle(
-                  color: Colors.orange,
+                  color: AppColors.primary,
                 ),
               ),
             ],
@@ -157,19 +157,19 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               children: [
                 TextSpan(
-                  text: 'Discover Amazing\n',
+                  text: 'Discover amazing\n',
                   style: TextStyle(color: AppColors.textPrimary),
                 ),
                 TextSpan(
-                  text: 'Recipes',
-                  style: TextStyle(color: AppColors.primary),
+                  text: 'recipes',
+                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
                 ),
               ],
             ),
           ),
           SizedBox(height: 8),
           Text(
-            'From verified chefs around the world',
+            'From verified chefs around the world!',
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
               fontSize: 16,
