@@ -1,0 +1,266 @@
+import 'package:flutter/material.dart';
+import '../config/app_theme.dart';
+import '../models/recipe.dart';
+import '../services/recipe_data_service.dart';
+import '../widgets/recipe_card.dart';
+import '../widgets/app_drawer.dart';
+
+class HomeScreen extends StatefulWidget {
+  @override
+  HomeScreenState createState() => HomeScreenState();
+}
+
+class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  List<Recipe> _displayedRecipes = RecipeDataService.recipes;
+  String _selectedCategory = 'All';
+  String _currentPage = 'home';
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _filterRecipesByCategory(String category) {
+    setState(() {
+      _selectedCategory = category;
+      _displayedRecipes = RecipeDataService.getRecipesByCategory(category);
+    });
+  }
+
+  void _onPageSelected(String page) {
+    setState(() {
+      _currentPage = page;
+    });
+
+    switch (page) {
+      case 'profile':
+        _showSnackBar('Profile page coming soon!');
+        break;
+      case 'bookmarks':
+        _showSnackBar('Bookmarks page coming soon!');
+        break;
+      case 'settings':
+        _showSnackBar('Settings page coming soon!');
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: TextStyle(fontFamily: AppTheme.fontFamily)),
+        backgroundColor: AppColors.accent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu_rounded, color: AppColors.textPrimary, size: 28),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        title: RichText(
+          text: TextSpan(
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+            children: [
+              TextSpan(
+                text: 'flavorful',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              TextSpan(
+                text: '.',
+                style: TextStyle(
+                  color: Colors.orange,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          Container(
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.search_rounded, color: AppColors.textPrimary),
+              onPressed: () => _showSnackBar('Search feature coming soon!'),
+            ),
+          ),
+        ],
+      ),
+
+      // Drawer Widget
+      drawer: AppDrawer(
+        currentPage: _currentPage,
+        onPageSelected: _onPageSelected,
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildHeader()),
+          SliverToBoxAdapter(child: _buildCategoryFilter()),
+          SliverPadding(
+            padding: EdgeInsets.all(16),
+            sliver: _buildAnimatedRecipeList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    // Container Class usage
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+                height: 1.1,
+              ),
+              children: [
+                TextSpan(
+                  text: 'Discover Amazing\n',
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
+                TextSpan(
+                  text: 'Recipes',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'From verified chefs around the world',
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilter() {
+    return Container(
+      height: 50,
+      margin: EdgeInsets.only(bottom: 10),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        itemCount: RecipeDataService.categories.length,
+        itemBuilder: (context, index) {
+          final category = RecipeDataService.categories[index];
+          final isSelected = _selectedCategory == category;
+
+          return Container(
+            margin: EdgeInsets.only(right: 12),
+            child: FilterChip(
+              label: Text(
+                category,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (selected) => _filterRecipesByCategory(category),
+              selectedColor: AppColors.primary,
+              backgroundColor: AppColors.surface,
+              elevation: isSelected ? 4 : 2,
+              shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected ? AppColors.primary : AppColors.border,
+                  width: 1,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAnimatedRecipeList() {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+                (context, index) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: Offset(0, 0.3),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: _animationController,
+                  curve: Interval(
+                    index * 0.1,
+                    1.0,
+                    curve: Curves.easeOutCubic,
+                  ),
+                )),
+                child: FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: _animationController,
+                    curve: Interval(
+                      index * 0.1,
+                      1.0,
+                      curve: Curves.easeOut,
+                    ),
+                  ),
+                  child: RecipeCard(recipe: _displayedRecipes[index]),
+                ),
+              );
+            },
+            childCount: _displayedRecipes.length,
+          ),
+        );
+      },
+    );
+  }
+}
