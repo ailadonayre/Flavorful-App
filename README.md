@@ -1,4 +1,4 @@
-# recipe_book
+# flavorful.
 
 A new Flutter project.
 
