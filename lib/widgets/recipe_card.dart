@@ -158,28 +158,32 @@ class _RecipeCardState extends State<RecipeCard> with SingleTickerProviderStateM
             ),
           ),
 
-          // Likes Counter
+          // Likes Counter - Moved to bottom-left corner
           Positioned(
-            top: 12,
-            right: 60,
+            bottom: 12,
+            left: 12,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 1,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.thumb_up, color: AppColors.accent, size: 14),
+                  Icon(Icons.thumb_up, color: Colors.white, size: 14),
                   SizedBox(width: 4),
                   Text(
                     widget.recipe.formattedLikes,
                     style: TextStyle(
                       fontFamily: AppTheme.fontFamily,
                       fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -187,7 +191,7 @@ class _RecipeCardState extends State<RecipeCard> with SingleTickerProviderStateM
             ),
           ),
 
-          // Favorite Button
+          // Favorite Button - Keep in top-right
           Positioned(
             top: 12,
             right: 12,

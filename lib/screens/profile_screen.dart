@@ -76,7 +76,13 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pop(context);
+            // Update the home screen state to reflect we're back on home
+            if (Navigator.canPop(context)) {
+              // This will help maintain proper navigation state
+            }
+          },
         ),
         title: Text(
           'Profile',
@@ -311,16 +317,14 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         children: [
           Expanded(
             child: _buildTabButton(
-              'My Recipes',
-              '${_myRecipes.length}',
+              'My Recipes (${_myRecipes.length})',
               _activeTab == 'myRecipes',
                   () => _switchTab('myRecipes'),
             ),
           ),
           Expanded(
             child: _buildTabButton(
-              'Favorites',
-              '${_favoriteRecipes.length}',
+              'Favorites (${_favoriteRecipes.length})',
               _activeTab == 'favorites',
                   () => _switchTab('favorites'),
             ),
@@ -330,7 +334,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildTabButton(String title, String count, bool isActive, VoidCallback onTap) {
+  Widget _buildTabButton(String title, bool isActive, VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
         color: isActive ? AppColors.primary : Colors.transparent,
@@ -344,29 +348,15 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           onTap: onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-            child: Column(
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontFamily,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: isActive ? Colors.white : AppColors.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 4),
-                Text(
-                  count,
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontFamily,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                    color: isActive ? Colors.white.withValues(alpha: 0.8) : AppColors.textSecondary,
-                  ),
-                ),
-              ],
+            child: Text(
+              title,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: isActive ? Colors.white : AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ),

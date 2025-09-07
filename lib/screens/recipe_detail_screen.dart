@@ -282,76 +282,122 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTick
   }
 
   Widget _buildRecipeStats() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double cardWidth = (constraints.maxWidth - 36) / 4;
-
-        return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            SizedBox(
-              width: cardWidth,
-              child: _buildStatCard(Icons.access_time, 'Time', widget.recipe.cookingTime),
-            ),
-            SizedBox(
-              width: cardWidth,
-              child: _buildStatCard(Icons.restaurant, 'Servings', '${widget.recipe.servings}'),
-            ),
-            SizedBox(
-              width: cardWidth,
-              child: _buildStatCard(Icons.signal_cellular_alt, 'Level', widget.recipe.difficulty),
-            ),
-            SizedBox(
-              width: cardWidth,
-              child: _buildStatCard(Icons.star, 'Rating', '${widget.recipe.rating}'),
-            ),
-          ],
-        );
-      },
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.info_outline,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: 12),
+              Text(
+                'Recipe Information',
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          // First Row: Time and Servings
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.access_time,
+                  label: 'Cook Time',
+                  value: widget.recipe.cookingTime,
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.restaurant,
+                  label: 'Servings',
+                  value: '${widget.recipe.servings}',
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          // Second Row: Difficulty and Rating
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.signal_cellular_alt,
+                  label: 'Difficulty',
+                  value: widget.recipe.difficulty,
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  icon: Icons.star,
+                  label: 'Rating',
+                  value: '${widget.recipe.rating}',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildStatCard(IconData icon, String label, String value) {
+  Widget _buildStatCard({required IconData icon, required String label, required String value}) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
+          Icon(icon, color: AppColors.primary, size: 28),
           SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFamily,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFamily,
-                fontSize: 10,
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

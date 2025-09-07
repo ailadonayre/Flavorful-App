@@ -46,27 +46,43 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _onPageSelected(String page) {
-    setState(() {
-      _currentPage = page;
-    });
+    // Reset to home when returning
+    if (_currentPage != 'home') {
+      setState(() {
+        _currentPage = 'home';
+      });
+    }
 
     switch (page) {
       case 'profile':
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => ProfileScreen()),
-        );
+        ).then((_) {
+          // When returning from profile, ensure we're back on home
+          setState(() {
+            _currentPage = 'home';
+          });
+        });
         break;
       case 'favorites':
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => FavoritesScreen()),
-        );
+        ).then((_) {
+          // When returning from favorites, ensure we're back on home
+          setState(() {
+            _currentPage = 'home';
+          });
+        });
         break;
       case 'settings':
         _showSnackBar('Settings page coming soon!');
         break;
       default:
+        setState(() {
+          _currentPage = 'home';
+        });
         break;
     }
   }
