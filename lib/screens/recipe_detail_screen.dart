@@ -1,11 +1,64 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../models/recipe.dart';
+import '../services/favorites_service.dart';
 
-class RecipeDetailScreen extends StatelessWidget {
+class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
 
   const RecipeDetailScreen({Key? key, required this.recipe}) : super(key: key);
+
+  @override
+  _RecipeDetailScreenState createState() => _RecipeDetailScreenState();
+}
+
+class _RecipeDetailScreenState extends State<RecipeDetailScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _favoriteAnimationController;
+  late Animation<double> _favoriteAnimation;
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _favoriteAnimationController = AnimationController(
+      duration: Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _favoriteAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _favoriteAnimationController, curve: Curves.elasticOut),
+    );
+
+    _isFavorite = FavoritesService.isFavorite(widget.recipe.id);
+  }
+
+  @override
+  void dispose() {
+    _favoriteAnimationController.dispose();
+    super.dispose();
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = FavoritesService.toggleFavorite(widget.recipe.id);
+    });
+
+    _favoriteAnimationController.forward().then((_) {
+      _favoriteAnimationController.reverse();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isFavorite ? 'Added to favorites!' : 'Removed from favorites',
+          style: TextStyle(fontFamily: AppTheme.fontFamily),
+        ),
+        backgroundColor: _isFavorite ? Colors.red : AppColors.textSecondary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: Duration(milliseconds: 1500),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,20 +127,17 @@ class RecipeDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          child: IconButton(
-            icon: Icon(Icons.favorite_border, color: AppColors.textPrimary),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Added to favorites!',
-                    style: TextStyle(fontFamily: AppTheme.fontFamily),
+          child: AnimatedBuilder(
+            animation: _favoriteAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _favoriteAnimation.value,
+                child: IconButton(
+                  icon: Icon(
+                    _isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: _isFavorite ? Colors.red : AppColors.textPrimary,
                   ),
-                  backgroundColor: AppColors.primary,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  onPressed: _toggleFavorite,
                 ),
               );
             },
@@ -98,7 +148,7 @@ class RecipeDetailScreen extends StatelessWidget {
         background: ClipRRect(
           borderRadius: BorderRadius.circular(0),
           child: Image.asset(
-            recipe.imageUrl,
+            widget.recipe.imageUrl,
             width: double.infinity,
             height: 300,
             fit: BoxFit.cover,
@@ -136,7 +186,7 @@ class RecipeDetailScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          recipe.title,
+          widget.recipe.title,
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
             fontSize: 28,
@@ -153,7 +203,7 @@ class RecipeDetailScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            recipe.category,
+            widget.recipe.category,
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
               color: Colors.white,
@@ -175,7 +225,7 @@ class RecipeDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(recipe.uploadedBy.avatar, style: TextStyle(fontSize: 40)),
+          Text(widget.recipe.uploadedBy.avatar, style: TextStyle(fontSize: 40)),
           SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -184,7 +234,7 @@ class RecipeDetailScreen extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      recipe.uploadedBy.name,
+                      widget.recipe.uploadedBy.name,
                       style: TextStyle(
                         fontFamily: AppTheme.fontFamily,
                         fontSize: 16,
@@ -192,7 +242,7 @@ class RecipeDetailScreen extends StatelessWidget {
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    if (recipe.uploadedBy.isVerified) ...[
+                    if (widget.recipe.uploadedBy.isVerified) ...[
                       SizedBox(width: 6),
                       Icon(Icons.verified, size: 18, color: AppColors.accent),
                     ],
@@ -200,7 +250,7 @@ class RecipeDetailScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  recipe.uploadedBy.formattedFollowers,
+                  widget.recipe.uploadedBy.formattedFollowers,
                   style: TextStyle(
                     fontFamily: AppTheme.fontFamily,
                     fontSize: 14,
@@ -242,19 +292,19 @@ class RecipeDetailScreen extends StatelessWidget {
           children: [
             SizedBox(
               width: cardWidth,
-              child: _buildStatCard(Icons.access_time, 'Time', recipe.cookingTime),
+              child: _buildStatCard(Icons.access_time, 'Time', widget.recipe.cookingTime),
             ),
             SizedBox(
               width: cardWidth,
-              child: _buildStatCard(Icons.restaurant, 'Servings', '${recipe.servings}'),
+              child: _buildStatCard(Icons.restaurant, 'Servings', '${widget.recipe.servings}'),
             ),
             SizedBox(
               width: cardWidth,
-              child: _buildStatCard(Icons.signal_cellular_alt, 'Level', recipe.difficulty),
+              child: _buildStatCard(Icons.signal_cellular_alt, 'Level', widget.recipe.difficulty),
             ),
             SizedBox(
               width: cardWidth,
-              child: _buildStatCard(Icons.star, 'Rating', '${recipe.rating}'),
+              child: _buildStatCard(Icons.star, 'Rating', '${widget.recipe.rating}'),
             ),
           ],
         );
@@ -319,9 +369,9 @@ class RecipeDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader('Ingredients', Icons.shopping_cart_outlined, '${recipe.ingredients.length} items'),
+          _buildSectionHeader('Ingredients', Icons.shopping_cart_outlined, '${widget.recipe.ingredients.length} items'),
           SizedBox(height: 20),
-          ...recipe.ingredients.asMap().entries.map((entry) {
+          ...widget.recipe.ingredients.asMap().entries.map((entry) {
             int index = entry.key;
             String ingredient = entry.value;
             return Container(
@@ -384,9 +434,9 @@ class RecipeDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader('Instructions', Icons.list_alt_outlined, '${recipe.instructions.length} steps'),
+          _buildSectionHeader('Instructions', Icons.list_alt_outlined, '${widget.recipe.instructions.length} steps'),
           SizedBox(height: 20),
-          ...recipe.instructions.asMap().entries.map((entry) {
+          ...widget.recipe.instructions.asMap().entries.map((entry) {
             int index = entry.key + 1;
             String instruction = entry.value;
             return Container(

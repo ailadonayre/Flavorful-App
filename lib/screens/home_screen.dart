@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../models/recipe.dart';
 import '../services/recipe_data_service.dart';
+import '../services/favorites_service.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/app_drawer.dart';
+import '../screens/profile_screen.dart';
+import '../screens/favorites_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -24,6 +27,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
     );
     _animationController.forward();
+
+    // Initialize demo favorites
+    FavoritesService.initializeDemoFavorites();
   }
 
   @override
@@ -46,10 +52,16 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     switch (page) {
       case 'profile':
-        _showSnackBar('Profile page coming soon!');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
+        );
         break;
-      case 'bookmarks':
-        _showSnackBar('Bookmarks page coming soon!');
+      case 'favorites':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => FavoritesScreen()),
+        );
         break;
       case 'settings':
         _showSnackBar('Settings page coming soon!');
@@ -73,7 +85,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
@@ -211,7 +223,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               backgroundColor: AppColors.surface,
               elevation: isSelected ? 4 : 2,
               shadowColor: AppColors.primary.withValues(alpha: 0.3),
-                shape: RoundedRectangleBorder(
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color: isSelected ? AppColors.primary : AppColors.border,

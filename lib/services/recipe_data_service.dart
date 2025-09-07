@@ -3,7 +3,7 @@ import '../models/recipe.dart';
 
 class RecipeDataService {
   static List<User> get users => [
-    User(name: "Chef Maria", avatar: "👩‍🍳", isVerified: true, followers: 15200),
+    User(name: "Chef Thalia", avatar: "👩‍🍳", isVerified: true, followers: 15200), // Changed from Chef Maria
     User(name: "Cook Tony", avatar: "👨‍🍳", isVerified: true, followers: 8900),
     User(name: "Baker Sarah", avatar: "👩‍🍳", isVerified: true, followers: 22100),
     User(name: "Chef Luis", avatar: "👨‍🍳", isVerified: true, followers: 31500),
@@ -24,7 +24,7 @@ class RecipeDataService {
         servings: 4,
         rating: 4.8,
         likes: 1234,
-        uploadedBy: userList[0],
+        uploadedBy: userList[0], // Chef Thalia
         uploadDate: DateTime.now().subtract(Duration(hours: 3)),
         ingredients: [
           "400g Arborio rice",
