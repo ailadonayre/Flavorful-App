@@ -438,7 +438,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: TextStyle(fontFamily: AppTheme.fontFamily)),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primary, // Changed to use primary color consistently
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

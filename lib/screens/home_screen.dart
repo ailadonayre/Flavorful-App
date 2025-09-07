@@ -7,6 +7,7 @@ import '../widgets/recipe_card.dart';
 import '../widgets/app_drawer.dart';
 import '../screens/profile_screen.dart';
 import '../screens/favorites_screen.dart';
+import '../screens/create_recipe_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -87,11 +88,23 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  void _navigateToCreateRecipe() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateRecipeScreen()),
+    ).then((_) {
+      // Refresh recipes if needed when returning
+      setState(() {
+        _displayedRecipes = RecipeDataService.getRecipesByCategory(_selectedCategory);
+      });
+    });
+  }
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: TextStyle(fontFamily: AppTheme.fontFamily)),
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.primary, // Changed to use primary color consistently
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -155,6 +168,39 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         currentPage: _currentPage,
         onPageSelected: _onPageSelected,
       ),
+
+      // Floating Action Button
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: _navigateToCreateRecipe,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          icon: Icon(Icons.add, size: 24),
+          label: Text(
+            'Create',
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      ),
+
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildHeader()),
