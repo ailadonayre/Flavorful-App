@@ -5,7 +5,21 @@ import 'screens/auth/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebase
+
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyBwUAlKR51Ir192X2f4tmmpqaYhgB0-V6U',
+        appId: '1:786700665264:android:47ceaf8eeb695884dbd675',
+        messagingSenderId: '786700665264',
+        projectId: 'flavorful-app',
+        storageBucket: 'flavorful-app.firebasestorage.app',
+      ),
+    );
+  } catch (e) {
+    print('Firebase initialization error: $e');
+  }
+
   runApp(const FlavorfulApp());
 }
 
@@ -18,7 +32,7 @@ class FlavorfulApp extends StatelessWidget {
       title: 'flavorful.',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: OnboardingScreen(), // Start with onboarding
+      home: OnboardingScreen(),
     );
   }
 }

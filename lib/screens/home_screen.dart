@@ -10,6 +10,8 @@ import '../screens/favorites_screen.dart';
 import '../screens/create_recipe_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   HomeScreenState createState() => HomeScreenState();
 }
@@ -24,12 +26,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
     _animationController.forward();
 
-    // Initialize demo favorites
     FavoritesService.initializeDemoFavorites();
   }
 
@@ -47,7 +48,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _onPageSelected(String page) {
-    // Reset to home when returning
     if (_currentPage != 'home') {
       setState(() {
         _currentPage = 'home';
@@ -60,7 +60,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           context,
           MaterialPageRoute(builder: (context) => ProfileScreen()),
         ).then((_) {
-          // When returning from profile, ensure we're back on home
           setState(() {
             _currentPage = 'home';
           });
@@ -71,7 +70,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           context,
           MaterialPageRoute(builder: (context) => FavoritesScreen()),
         ).then((_) {
-          // When returning from favorites, ensure we're back on home
           setState(() {
             _currentPage = 'home';
           });
@@ -93,7 +91,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       context,
       MaterialPageRoute(builder: (context) => CreateRecipeScreen()),
     ).then((_) {
-      // Refresh recipes if needed when returning
       setState(() {
         _displayedRecipes = RecipeDataService.getRecipesByCategory(_selectedCategory);
       });
@@ -103,8 +100,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(fontFamily: AppTheme.fontFamily)),
-        backgroundColor: AppColors.primary, // Changed to use primary color consistently
+        content: Text(message, style: const TextStyle(fontFamily: AppTheme.fontFamily)),
+        backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -120,12 +117,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         elevation: 0,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: Icon(Icons.menu_rounded, color: AppColors.textPrimary, size: 28),
+            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary, size: 28),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
         title: RichText(
-          text: TextSpan(
+          text: const TextSpan(
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
               fontSize: 26,
@@ -150,26 +147,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         actions: [
           Container(
-            margin: EdgeInsets.only(right: 16),
+            margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
               color: AppColors.cardBackground,
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              icon: Icon(Icons.search_rounded, color: AppColors.textPrimary),
+              icon: const Icon(Icons.search_rounded, color: AppColors.textPrimary),
               onPressed: () => _showSnackBar('Search feature coming soon!'),
             ),
           ),
         ],
       ),
 
-      // Drawer Widget
       drawer: AppDrawer(
         currentPage: _currentPage,
         onPageSelected: _onPageSelected,
       ),
 
-      // Floating Action Button
       floatingActionButton: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -177,7 +172,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             BoxShadow(
               color: AppColors.primary.withValues(alpha: 0.3),
               blurRadius: 12,
-              offset: Offset(0, 6),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -189,8 +184,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          icon: Icon(Icons.add, size: 24),
-          label: Text(
+          icon: const Icon(Icons.add, size: 24),
+          label: const Text(
             'Create',
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
@@ -206,7 +201,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           SliverToBoxAdapter(child: _buildHeader()),
           SliverToBoxAdapter(child: _buildCategoryFilter()),
           SliverPadding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             sliver: _buildAnimatedRecipeList(),
           ),
         ],
@@ -215,14 +210,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeader() {
-    // Container Class usage
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
-            text: TextSpan(
+            text: const TextSpan(
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
                 fontSize: 28,
@@ -241,8 +235,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'From verified chefs around the world!',
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
@@ -259,17 +253,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildCategoryFilter() {
     return Container(
       height: 50,
-      margin: EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 10),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: RecipeDataService.categories.length,
         itemBuilder: (context, index) {
           final category = RecipeDataService.categories[index];
           final isSelected = _selectedCategory == category;
 
           return Container(
-            margin: EdgeInsets.only(right: 12),
+            margin: const EdgeInsets.only(right: 12),
             child: FilterChip(
               label: Text(
                 category,
@@ -308,7 +302,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 (context, index) {
               return SlideTransition(
                 position: Tween<Offset>(
-                  begin: Offset(0, 0.3),
+                  begin: const Offset(0, 0.3),
                   end: Offset.zero,
                 ).animate(CurvedAnimation(
                   parent: _animationController,

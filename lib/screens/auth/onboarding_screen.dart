@@ -3,24 +3,25 @@ import '../../config/app_theme.dart';
 import 'register_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
+  const OnboardingScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              // Skip button
               Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: () => Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Skip',
                     style: TextStyle(
                       fontFamily: AppTheme.fontFamily,
@@ -31,11 +32,10 @@ class OnboardingScreen extends StatelessWidget {
                 ),
               ),
 
-              Spacer(),
+              const Spacer(),
 
-              // Logo
               RichText(
-                text: TextSpan(
+                text: const TextSpan(
                   style: TextStyle(
                     fontFamily: AppTheme.fontFamily,
                     fontSize: 48,
@@ -52,9 +52,9 @@ class OnboardingScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              Text(
+              const Text(
                 'Share & Discover\nWorld Cuisines',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -65,10 +65,9 @@ class OnboardingScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 60),
+              const SizedBox(height: 60),
 
-              // Role Selection Cards
-              Text(
+              const Text(
                 'I am a...',
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
@@ -78,7 +77,7 @@ class OnboardingScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               _RoleCard(
                 icon: Icons.restaurant_menu,
@@ -87,7 +86,7 @@ class OnboardingScreen extends StatelessWidget {
                 onTap: () => _navigateToRegister(context, 'chef'),
               ),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               _RoleCard(
                 icon: Icons.local_dining,
@@ -96,7 +95,7 @@ class OnboardingScreen extends StatelessWidget {
                 onTap: () => _navigateToRegister(context, 'amateur'),
               ),
 
-              Spacer(flex: 2),
+              const Spacer(flex: 2),
             ],
           ),
         ),
@@ -136,9 +135,9 @@ class _RoleCard extends StatelessWidget {
         border: Border.all(color: AppColors.border, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -149,13 +148,13 @@ class _RoleCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -164,24 +163,24 @@ class _RoleCard extends StatelessWidget {
                     size: 32,
                   ),
                 ),
-                SizedBox(width: 20),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: AppTheme.fontFamily,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: AppTheme.fontFamily,
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -190,7 +189,7 @@ class _RoleCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.arrow_forward_ios,
                   color: AppColors.textSecondary,
                   size: 20,

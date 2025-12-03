@@ -5,6 +5,8 @@ import '../services/favorites_service.dart';
 import '../widgets/recipe_card.dart';
 
 class FavoritesScreen extends StatefulWidget {
+  const FavoritesScreen({super.key});
+
   @override
   _FavoritesScreenState createState() => _FavoritesScreenState();
 }
@@ -32,10 +34,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'My Favorites',
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
@@ -47,15 +49,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         actions: [
           if (_favoriteRecipes.isNotEmpty)
             Container(
-              margin: EdgeInsets.only(right: 16),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 '${_favoriteRecipes.length} recipes',
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -74,24 +76,24 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.favorite_border,
                 size: 64,
                 color: AppColors.primary,
               ),
             ),
-            SizedBox(height: 24),
-            Text(
+            const SizedBox(height: 24),
+            const Text(
               'No Favorite Recipes Yet',
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
@@ -100,8 +102,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
-            SizedBox(height: 12),
-            Text(
+            const SizedBox(height: 12),
+            const Text(
               'Start exploring recipes and tap the heart icon to save your favorites here!',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -111,7 +113,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 height: 1.5,
               ),
             ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             Container(
               decoration: BoxDecoration(
                 color: AppColors.primary,
@@ -123,7 +125,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(12),
                   onTap: () => Navigator.pop(context),
-                  child: Padding(
+                  child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -153,10 +155,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget _buildFavoritesList() {
     return Column(
       children: [
-        // Header with stats
         Container(
-          margin: EdgeInsets.all(16),
-          padding: EdgeInsets.all(16),
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
@@ -164,17 +165,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.favorite,
-                color: Colors.red,
-                size: 24,
-              ),
-              SizedBox(width: 12),
+              const Icon(Icons.favorite, color: Colors.red, size: 24),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Your Favorite Collection',
                       style: TextStyle(
                         fontFamily: AppTheme.fontFamily,
@@ -183,10 +180,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       '${_favoriteRecipes.length} delicious recipes saved',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: AppTheme.fontFamily,
                         fontSize: 14,
                         color: AppColors.textSecondary,
@@ -198,11 +195,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ],
           ),
         ),
-
-        // Recipes List
         Expanded(
           child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: _favoriteRecipes.length,
             itemBuilder: (context, index) {
               return RecipeCard(recipe: _favoriteRecipes[index]);
