@@ -27,7 +27,7 @@ class AuthService {
     }
   }
 
-  // Register user
+  // Register user - FIXED VERSION
   Future<UserModel> registerUser({
     required String username,
     required String displayName,
@@ -35,6 +35,8 @@ class AuthService {
     required String password,
     required String role,
   }) async {
+    UserCredential? userCredential;
+
     try {
       // Check username uniqueness first
       final isUnique = await isUsernameUnique(username);
@@ -43,7 +45,7 @@ class AuthService {
       }
 
       // Create Firebase Auth user
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      userCredential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
@@ -69,18 +71,35 @@ class AuthService {
 
       return userModel;
     } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
+      // If user was created but Firestore failed, delete the auth user
+      if (userCredential?.user != null) {
+        try {
+          await userCredential!.user!.delete();
+        } catch (deleteError) {
+          print('Failed to delete user after error: $deleteError');
+        }
+      }
+      throw Exception(_handleAuthException(e));
     } catch (e) {
+      // If user was created but Firestore failed, delete the auth user
+      if (userCredential?.user != null) {
+        try {
+          await userCredential!.user!.delete();
+        } catch (deleteError) {
+          print('Failed to delete user after error: $deleteError');
+        }
+      }
       throw Exception('Registration failed: $e');
     }
   }
 
-  // Login user
+  // Login user - FIXED VERSION
   Future<UserModel> loginUser({
     required String email,
     required String password,
   }) async {
     try {
+      // Sign in with Firebase Auth
       final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
@@ -88,21 +107,39 @@ class AuthService {
 
       final user = userCredential.user;
       if (user == null) {
-        throw Exception('Login failed');
+        throw Exception('Login failed - No user returned');
       }
 
       // Get user data from Firestore
       final userDoc = await _firestore.collection('users').doc(user.uid).get();
 
       if (!userDoc.exists) {
-        throw Exception('User data not found');
+        // If Firestore document doesn't exist, sign out and throw error
+        await _auth.signOut();
+        throw Exception('User data not found. Please contact support.');
       }
 
-      return UserModel.fromMap(user.uid, userDoc.data()!);
+      final userData = userDoc.data();
+      if (userData == null) {
+        await _auth.signOut();
+        throw Exception('User data is invalid. Please contact support.');
+      }
+
+      return UserModel.fromMap(user.uid, userData);
     } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
+      throw Exception(_handleAuthException(e));
     } catch (e) {
-      throw Exception('Login failed: $e');
+      // Make sure to sign out if there's any error after successful auth
+      if (_auth.currentUser != null) {
+        await _auth.signOut();
+      }
+
+      // Extract the actual error message if it's wrapped in Exception
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
+      throw Exception(errorMessage);
     }
   }
 
@@ -120,7 +157,7 @@ class AuthService {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
     } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
+      throw Exception(_handleAuthException(e));
     } catch (e) {
       throw Exception('Password reset failed: $e');
     }
@@ -131,12 +168,13 @@ class AuthService {
     try {
       final userDoc = await _firestore.collection('users').doc(uid).get();
 
-      if (!userDoc.exists) {
+      if (!userDoc.exists || userDoc.data() == null) {
         return null;
       }
 
       return UserModel.fromMap(uid, userDoc.data()!);
     } catch (e) {
+      print('Error getting user data: $e');
       return null;
     }
   }
@@ -149,7 +187,7 @@ class AuthService {
       case 'invalid-email':
         return 'Invalid email address';
       case 'weak-password':
-        return 'Password is too weak';
+        return 'Password is too weak (minimum 6 characters)';
       case 'user-not-found':
         return 'No user found with this email';
       case 'wrong-password':
@@ -160,8 +198,16 @@ class AuthService {
         return 'Too many attempts. Please try again later';
       case 'network-request-failed':
         return 'Network error. Please check your connection';
+      case 'operation-not-allowed':
+        return 'Email/password sign-in is not enabled';
+      case 'invalid-credential':
+        return 'Invalid email or password';
+      case 'invalid-verification-code':
+        return 'Invalid verification code';
+      case 'invalid-verification-id':
+        return 'Invalid verification ID';
       default:
-        return 'Authentication error: ${e.message ?? 'Unknown error'}';
+        return e.message ?? 'Authentication error occurred';
     }
   }
 }

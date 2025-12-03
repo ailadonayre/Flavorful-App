@@ -66,8 +66,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Check username uniqueness
       final isUnique = await _authService.isUsernameUnique(_usernameController.text.trim());
       if (!isUnique) {
-        _showError('Username is already taken');
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+          _showError('Username is already taken');
+        }
         return;
       }
 
@@ -80,17 +82,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
         role: _role,
       );
 
-      setState(() => _isLoading = false);
+      // Only update UI if still mounted
+      if (mounted) {
+        setState(() => _isLoading = false);
 
-      // Show success dialog based on role
-      if (_role == 'chef') {
-        _showChefSuccessDialog();
-      } else {
-        _showSuccessDialog();
+        // Show success dialog based on role
+        if (_role == 'chef') {
+          _showChefSuccessDialog();
+        } else {
+          _showSuccessDialog();
+        }
       }
     } catch (e) {
-      setState(() => _isLoading = false);
-      _showError(e.toString().replaceAll('Exception: ', ''));
+      // Only update UI if still mounted
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        // Extract error message
+        String errorMessage = e.toString();
+        if (errorMessage.startsWith('Exception: ')) {
+          errorMessage = errorMessage.substring(11);
+        }
+
+        _showError(errorMessage);
+      }
     }
   }
 

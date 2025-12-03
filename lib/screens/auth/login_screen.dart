@@ -60,22 +60,39 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
 
+      // Save remember me preferences
       await LocalStorage.setRememberMe(
         _rememberMe,
         _rememberMe ? userModel.email : null,
         _rememberMe ? userModel.uid : null,
       );
 
-      setState(() => _isLoading = false);
+      // Only set loading to false if still mounted
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-            (route) => false,
-      );
+      // Navigate to home screen
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+              (route) => false,
+        );
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      _showError(e.toString().replaceAll('Exception: ', ''));
+      // Only update UI if still mounted
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        // Extract error message
+        String errorMessage = e.toString();
+        if (errorMessage.startsWith('Exception: ')) {
+          errorMessage = errorMessage.substring(11);
+        }
+
+        _showError(errorMessage);
+      }
     }
   }
 
