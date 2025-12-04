@@ -249,7 +249,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                     const TextSpan(
                       text: '?',
-                      style: TextStyle(color: AppColors.textPrimary),
+                      style: TextStyle(color: AppColors.primary),
                     ),
                   ],
                 ),
