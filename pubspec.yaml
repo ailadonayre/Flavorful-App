@@ -28,6 +28,7 @@ flutter:
 
   assets:
     - assets/img/
+    - assets/img/sdg_logo.png
     - .env
 
   fonts:

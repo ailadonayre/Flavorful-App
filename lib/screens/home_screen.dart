@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import '../config/app_theme.dart';
 import '../models/recipe.dart';
@@ -7,6 +8,8 @@ import '../services/recipe_data_service.dart';
 import '../services/favorites_service.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/assistive_touch.dart'; // ADD THIS
+import '../widgets/sdg_popup.dart'; // ADD THIS
 import '../screens/profile_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/create_recipe_screen.dart';
@@ -20,6 +23,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  static const String _sdgPopupSeenKey = 'sdg_popup_seen';
+
   late AnimationController _animationController;
   List<Recipe> _displayedRecipes = RecipeDataService.recipes;
   String _selectedCategory = 'All';
@@ -35,6 +40,32 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _animationController.forward();
 
     FavoritesService.initializeDemoFavorites();
+
+    // Check if this is first login and show popup
+    _checkAndShowSDGPopup();
+  }
+
+  /// Check if SDG popup has been shown before, if not show it automatically
+  Future<void> _checkAndShowSDGPopup() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenPopup = prefs.getBool(_sdgPopupSeenKey) ?? false;
+
+    if (!hasSeenPopup && mounted) {
+      // Wait a bit for the screen to fully load
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      if (mounted) {
+        // Mark as seen
+        await prefs.setBool(_sdgPopupSeenKey, true);
+
+        // Show popup
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (context) => const SDGPopup(),
+        );
+      }
+    }
   }
 
   @override
@@ -173,7 +204,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.3),
+              color: AppColors.primary.withOpacity(0.3),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -199,14 +230,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       ),
 
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildHeader()),
-          SliverToBoxAdapter(child: _buildCategoryFilter()),
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: _buildAnimatedRecipeList(),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader()),
+              SliverToBoxAdapter(child: _buildCategoryFilter()),
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: _buildAnimatedRecipeList(),
+              ),
+            ],
           ),
+
+          // ADD ASSISTIVE TOUCH BUTTON
+          const AssistiveTouch(),
         ],
       ),
     );
@@ -308,7 +346,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               selectedColor: AppColors.primary,
               backgroundColor: AppColors.surface,
               elevation: isSelected ? 4 : 2,
-              shadowColor: AppColors.primary.withValues(alpha: 0.3),
+              shadowColor: AppColors.primary.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
