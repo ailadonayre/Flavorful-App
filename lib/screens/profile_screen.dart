@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../config/app_theme.dart';
 import '../models/recipe.dart';
-import '../models/user.dart';
+import '../models/user_model.dart';
 import '../services/recipe_data_service.dart';
 import '../services/favorites_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/recipe_card.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -14,11 +16,13 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateMixin {
-  User? _currentUser;
+  final AuthService _authService = AuthService();
+  UserModel? _currentUser;
   List<Recipe> _myRecipes = [];
   List<Recipe> _favoriteRecipes = [];
   String _activeTab = 'myRecipes';
   final ScrollController _scrollController = ScrollController();
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -32,16 +36,25 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     super.dispose();
   }
 
-  void _loadUserData() {
-    setState(() {
-      _currentUser = RecipeDataService.users.first;
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userData = await _authService.getUserData(user.uid);
+      setState(() {
+        _currentUser = userData;
 
-      _myRecipes = RecipeDataService.recipes
-          .where((recipe) => recipe.uploadedBy.name == _currentUser!.name)
-          .toList();
+        _myRecipes = RecipeDataService.recipes
+            .where((recipe) => recipe.uploadedBy.name == 'Chef Thalia')
+            .toList();
 
-      _favoriteRecipes = FavoritesService.getFavoriteRecipes();
-    });
+        _favoriteRecipes = FavoritesService.getFavoriteRecipes();
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _switchTab(String tab) {
@@ -60,10 +73,23 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    if (_currentUser == null) {
+    if (_isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.background,
         body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_currentUser == null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.surface,
+          title: const Text('Profile'),
+        ),
+        body: const Center(
+          child: Text('No user logged in'),
+        ),
       );
     }
 
@@ -135,15 +161,18 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary,
-                width: 3,
-              ),
+              border: Border.all(color: AppColors.primary, width: 3),
             ),
             child: Center(
               child: Text(
-                _currentUser!.avatar,
-                style: const TextStyle(fontSize: 50),
+                _currentUser!.displayName.isNotEmpty
+                    ? _currentUser!.displayName[0].toUpperCase()
+                    : '?',
+                style: const TextStyle(
+                  fontSize: 50,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ),
@@ -152,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                _currentUser!.name,
+                _currentUser!.displayName,
                 style: const TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   fontSize: 24,
@@ -160,21 +189,30 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   color: AppColors.textPrimary,
                 ),
               ),
-              if (_currentUser!.isVerified) ...[
+              if (_currentUser!.isVerifiedChef) ...[
                 const SizedBox(width: 8),
                 const Icon(Icons.verified, color: AppColors.accent, size: 24),
               ],
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Head Chef at Buon Giorno 👨‍🍳✨',
+          Text(
+            '@${_currentUser!.username}',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: AppTheme.fontFamily,
               fontSize: 14,
               color: AppColors.textSecondary,
-              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _currentUser!.email,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 12,
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 20),
@@ -183,9 +221,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             children: [
               _buildStatItem('Recipes', _myRecipes.length.toString()),
               Container(height: 40, width: 1, color: AppColors.border),
-              _buildStatItem('Followers', _formatNumber(_currentUser!.followers)),
+              _buildStatItem('Followers', '0'),
               Container(height: 40, width: 1, color: AppColors.border),
-              _buildStatItem('Following', _formatNumber(847)),
+              _buildStatItem('Following', '0'),
             ],
           ),
           const SizedBox(height: 20),
@@ -199,7 +237,6 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   ),
                   child: Material(
                     color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () => _showSnackBar('Edit profile coming soon!'),
@@ -228,7 +265,6 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 ),
                 child: Material(
                   color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () => _showSnackBar('Share profile coming soon!'),
@@ -314,7 +350,6 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
@@ -322,13 +357,13 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             child: Text(
               title,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
                 color: isActive ? Colors.white : AppColors.textPrimary,
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ),
@@ -396,17 +431,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        children:
-        currentRecipes.map((recipe) => RecipeCard(recipe: recipe)).toList(),
+        children: currentRecipes.map((recipe) => RecipeCard(recipe: recipe)).toList(),
       ),
     );
-  }
-
-  String _formatNumber(int number) {
-    if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}k';
-    }
-    return number.toString();
   }
 
   void _showSnackBar(String message) {

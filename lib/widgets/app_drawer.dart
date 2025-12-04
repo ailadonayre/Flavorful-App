@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../config/app_theme.dart';
-import '../models/user.dart';
-import '../services/recipe_data_service.dart';
+import '../models/user_model.dart';
+import '../services/auth_service.dart';
+import '../screens/auth/onboarding_screen.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   final String currentPage;
   final Function(String) onPageSelected;
 
@@ -14,15 +16,45 @@ class AppDrawer extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final currentUser = RecipeDataService.users.first; // Chef Thalia
+  State<AppDrawer> createState() => _AppDrawerState();
+}
 
+class _AppDrawerState extends State<AppDrawer> {
+  final AuthService _authService = AuthService();
+  UserModel? _currentUser;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userData = await _authService.getUserData(user.uid);
+      setState(() {
+        _currentUser = userData;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Drawer(
       child: Container(
         color: AppColors.surface,
-        child: Column(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
           children: [
-            _buildUserProfileHeader(context, currentUser),
+            _buildUserProfileHeader(context),
             Expanded(child: _buildNavigationList(context)),
             _buildLogoutSection(context),
           ],
@@ -31,7 +63,31 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildUserProfileHeader(BuildContext context, User currentUser) {
+  Widget _buildUserProfileHeader(BuildContext context) {
+    if (_currentUser == null) {
+      return Container(
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + 20,
+          bottom: 20,
+          left: 20,
+          right: 20,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.primary, AppColors.secondary],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: const Center(
+          child: Text(
+            'No user logged in',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + 20,
@@ -48,7 +104,6 @@ class AppDrawer extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // User Profile Section
           Row(
             children: [
               Container(
@@ -64,36 +119,45 @@ class AppDrawer extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    currentUser.avatar,
-                    style: TextStyle(fontSize: 30),
+                    _currentUser!.displayName.isNotEmpty
+                        ? _currentUser!.displayName[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Text(
-                          currentUser.name,
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                        Flexible(
+                          child: Text(
+                            _currentUser!.displayName,
+                            style: const TextStyle(
+                              fontFamily: AppTheme.fontFamily,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (currentUser.isVerified) ...[
-                          SizedBox(width: 6),
-                          Icon(Icons.verified, size: 18, color: Colors.white),
+                        if (_currentUser!.isVerifiedChef) ...[
+                          const SizedBox(width: 6),
+                          const Icon(Icons.verified, size: 18, color: Colors.white),
                         ],
                       ],
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      currentUser.formattedFollowers,
+                      '@${_currentUser!.username}',
                       style: TextStyle(
                         fontFamily: AppTheme.fontFamily,
                         fontSize: 12,
@@ -106,7 +170,7 @@ class AppDrawer extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -123,7 +187,7 @@ class AppDrawer extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        Padding(
+        const Padding(
           padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
           child: Text(
             'Navigation',
@@ -136,9 +200,9 @@ class AppDrawer extends StatelessWidget {
           ),
         ),
         ...navigationItems.map((item) {
-          final isSelected = currentPage == item['page'];
+          final isSelected = widget.currentPage == item['page'];
           return Container(
-            margin: EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primary.withValues(alpha: 0.1)
@@ -147,7 +211,7 @@ class AppDrawer extends StatelessWidget {
             ),
             child: ListTile(
               leading: Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primary : AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(8),
@@ -168,21 +232,19 @@ class AppDrawer extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(context);
-                onPageSelected(item['page'] as String);
+                widget.onPageSelected(item['page'] as String);
               },
             ),
           );
         }).toList(),
 
-        // Divider
         Container(
-          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           height: 1,
           color: AppColors.border,
         ),
 
-        // Additional Options
-        Padding(
+        const Padding(
           padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
           child: Text(
             'More',
@@ -195,21 +257,21 @@ class AppDrawer extends StatelessWidget {
           ),
         ),
         Container(
-          margin: EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
           child: ListTile(
             leading: Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.help_outline,
                 color: AppColors.textSecondary,
                 size: 20,
               ),
             ),
-            title: Text(
+            title: const Text(
               'Help & Support',
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
@@ -224,21 +286,21 @@ class AppDrawer extends StatelessWidget {
           ),
         ),
         Container(
-          margin: EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
           child: ListTile(
             leading: Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.info_outline,
                 color: AppColors.textSecondary,
                 size: 20,
               ),
             ),
-            title: Text(
+            title: const Text(
               'About',
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
@@ -258,15 +320,14 @@ class AppDrawer extends StatelessWidget {
 
   Widget _buildLogoutSection(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
         border: Border(
           top: BorderSide(color: AppColors.border, width: 1),
         ),
       ),
       child: Column(
         children: [
-          // Logout Button
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -283,7 +344,7 @@ class AppDrawer extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () => _showLogoutDialog(context),
-                child: Padding(
+                child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -308,12 +369,10 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 16),
-
-          // Footer
+          const SizedBox(height: 16),
           RichText(
             textAlign: TextAlign.center,
-            text: TextSpan(
+            text: const TextSpan(
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
                 fontSize: 12,
@@ -334,13 +393,13 @@ class AppDrawer extends StatelessWidget {
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: Text(
+          title: const Text(
             'Log Out',
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
@@ -348,7 +407,7 @@ class AppDrawer extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          content: Text(
+          content: const Text(
             'Are you sure you want to log out?',
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
@@ -357,8 +416,8 @@ class AppDrawer extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text(
                 'Cancel',
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
@@ -368,11 +427,11 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showSnackBar(context, 'Logout functionality coming soon!');
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await _performLogout(context);
               },
-              child: Text(
+              child: const Text(
                 'Log Out',
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
@@ -387,6 +446,23 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
+  Future<void> _performLogout(BuildContext context) async {
+    try {
+      await _authService.logout();
+
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+              (route) => false,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showSnackBar(context, 'Logout failed: $e');
+      }
+    }
+  }
+
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -396,7 +472,7 @@ class AppDrawer extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.restaurant_menu, color: AppColors.primary),
               SizedBox(width: 8),
@@ -410,7 +486,7 @@ class AppDrawer extends StatelessWidget {
               ),
             ],
           ),
-          content: Column(
+          content: const Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -436,7 +512,7 @@ class AppDrawer extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
+              child: const Text(
                 'Close',
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
@@ -454,8 +530,8 @@ class AppDrawer extends StatelessWidget {
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(fontFamily: AppTheme.fontFamily)),
-        backgroundColor: AppColors.primary, // Changed to use primary color consistently
+        content: Text(message, style: const TextStyle(fontFamily: AppTheme.fontFamily)),
+        backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

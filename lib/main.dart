@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/app_theme.dart';
 import 'screens/auth/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: 'AIzaSyBwUAlKR51Ir192X2f4tmmpqaYhgB0-V6U',
-        appId: '1:786700665264:android:47ceaf8eeb695884dbd675',
-        messagingSenderId: '786700665264',
-        projectId: 'flavorful-app',
-        storageBucket: 'flavorful-app.firebasestorage.app',
-      ),
-    );
-  } catch (e) {
-    print('Firebase initialization error: $e');
-  }
+  // Load env file FIRST
+  await dotenv.load(fileName: ".env");
+
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: dotenv.env['API_KEY']!,
+      appId: dotenv.env['APP_ID']!,
+      messagingSenderId: dotenv.env['MESSAGING_SENDER_ID']!,
+      projectId: dotenv.env['PROJECT_ID']!,
+      storageBucket: dotenv.env['STORAGE_BUCKET']!,
+    ),
+  );
 
   runApp(const FlavorfulApp());
 }
@@ -32,7 +32,7 @@ class FlavorfulApp extends StatelessWidget {
       title: 'flavorful.',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: OnboardingScreen(),
+      home: const OnboardingScreen(),
     );
   }
 }
