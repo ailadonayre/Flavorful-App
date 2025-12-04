@@ -58,6 +58,7 @@ GoogleService-Info.plist
 firebase_options.dart
 
 # Secrets and API keys
+serviceAccountKey.json
 secrets.json
 api_keys.json
 credentials.json

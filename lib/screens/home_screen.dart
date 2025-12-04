@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 import '../config/app_theme.dart';
 import '../models/recipe.dart';
 import '../services/recipe_data_service.dart';
@@ -8,6 +10,7 @@ import '../widgets/app_drawer.dart';
 import '../screens/profile_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/create_recipe_screen.dart';
+import '../models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -210,44 +213,71 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: const TextSpan(
-              style: TextStyle(
-                fontFamily: AppTheme.fontFamily,
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                height: 1.1,
+    return FutureBuilder<UserModel?>(
+      future: _getUserData(),
+      builder: (context, snapshot) {
+        String displayName = 'there';
+
+        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          displayName = snapshot.data!.displayName;
+        }
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontFamily: AppTheme.fontFamily,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    height: 1.1,
+                  ),
+                  children: [
+                    const TextSpan(
+                      text: 'What are we cooking\ntoday, ',
+                      style: TextStyle(color: AppColors.textPrimary),
+                    ),
+                    TextSpan(
+                      text: displayName,
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const TextSpan(
+                      text: '?',
+                      style: TextStyle(color: AppColors.textPrimary),
+                    ),
+                  ],
+                ),
               ),
-              children: [
-                TextSpan(
-                  text: 'Discover amazing\n',
-                  style: TextStyle(color: AppColors.textPrimary),
+              const SizedBox(height: 8),
+              const Text(
+                'From verified chefs around the world!',
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
                 ),
-                TextSpan(
-                  text: 'recipes',
-                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'From verified chefs around the world!',
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
+  }
+
+  Future<UserModel?> _getUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final authService = AuthService();
+      return await authService.getUserData(user.uid);
+    }
+    return null;
   }
 
   Widget _buildCategoryFilter() {

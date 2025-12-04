@@ -192,10 +192,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _navigateToHome();
+              _navigateToLogin(); // Changed from _navigateToHome
             },
             child: Text(
-              'Get Started',
+              'Continue to Login',
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
                 color: AppColors.primary,
@@ -233,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
         content: Text(
-          'Your account has been created successfully. Start exploring delicious recipes!',
+          'Your account has been created successfully. Please login to continue.',
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
             fontSize: 16,
@@ -244,10 +244,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _navigateToHome();
+              _navigateToLogin(); // Changed from _navigateToHome
             },
             child: Text(
-              'Start Exploring',
+              'Continue to Login',
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
                 color: AppColors.primary,
@@ -261,10 +261,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _navigateToHome() {
+  void _navigateToLogin() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      MaterialPageRoute(builder: (context) => LoginScreen()),
           (route) => false,
     );
   }
