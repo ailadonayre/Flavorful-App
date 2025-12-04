@@ -33,8 +33,8 @@ class SDGPopup extends StatelessWidget {
                 children: [
                   Image.asset(
                     'assets/img/sdg_logo.png',
-                    width: 32,
-                    height: 32,
+                    width: 50,
+                    height: 50,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         width: 32,

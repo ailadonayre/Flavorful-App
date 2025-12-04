@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../../helpers/validators.dart';
-import '../home_screen.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -244,7 +243,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _navigateToLogin(); // Changed from _navigateToHome
+              _navigateToLogin(); 
             },
             child: Text(
               'Continue to Login',
